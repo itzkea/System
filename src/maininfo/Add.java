@@ -6,14 +6,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
+import javax.swing.*;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import java.sql.*;
+import javax.swing.JFrame;
 
-public class Signup extends JFrame implements ActionListener {
+public class Add extends JFrame implements ActionListener {
     
     JFrame fr = new JFrame();
     JLabel lblwc, lbltoo, lblmy, lblstud, lblsn, lblmn, lblcourse, lblyl, lbladdress, lblcn, lblbday, lblposition, lblaffiliation;
@@ -22,12 +22,12 @@ public class Signup extends JFrame implements ActionListener {
     JButton btnregister;
     JComboBox<String> cbmonth, cbdate, cbyear;
     
-    String[] Month = {"January","February","March","April","May","June","July","August","September","October","November","December"};
+    String[] Month = {"01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"};
     String[] Day = {"1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31"};
     String[] Year = {"2010","2009","2008","2007","2006","2005","2004","2003","2002","2001","2000"};
     Connection conn;
     
-    Signup() {
+    Add() {
         try {
             conn = DriverManager.getConnection("jdbc:mysql://localhost:3307/db_cite", "root", "");
             Statement st = conn.createStatement();
@@ -242,6 +242,7 @@ public class Signup extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == btnregister) {
+            
             String studID = fldID.getText();
             String sn = fldsn.getText();
             String fn = fldfn.getText();
@@ -261,7 +262,7 @@ public class Signup extends JFrame implements ActionListener {
                 JOptionPane.showMessageDialog(null, "Registration Failed! Please fill in all required fields.", "Register", JOptionPane.ERROR_MESSAGE);
             } else {
                 try {
-                     String query = "INSERT INTO `tbl_cite` (`stud_ID`,`stud_LName`,`stud_FName`,`stud_MName`,`course`,`yearLevel`,`address`,`contactNum`,`BDAY`,`Position`,`Organization`,`Affiliation`) VALUES (?,?,?,?,?,?,?,?,?,?,?)";                   
+                     String query = "INSERT INTO tbl_cite (stud_ID,`stud_LastName`,`stud_FirstName`,`stud_MiddleName`,`Course`,`YearLevel`,`Address`,`Contact_No`,`Birthday`,`Position`,`Affiliation`) VALUES (?,?,?,?,?,?,?,?,?,?,?)"; 
                      
                      conn = DriverManager.getConnection("jdbc:mysql://localhost:3307/db_cite", "root", "");
                      PreparedStatement pst = conn.prepareStatement(query);
@@ -274,7 +275,7 @@ public class Signup extends JFrame implements ActionListener {
                     pst.setString(6,fldyl.getText());
                     pst.setString(7,fldaddress.getText());
                     pst.setString(8,fldcontact.getText());
-                    pst.setString(9,fldbday.getText());
+                    pst.setString(9,birthday);
                     pst.setString(10,fldposition.getText());
                     pst.setString(11,fldaff.getText());
                     
@@ -283,7 +284,7 @@ public class Signup extends JFrame implements ActionListener {
                     JOptionPane.showMessageDialog(null, "Registered Successfully!", "Register", JOptionPane.INFORMATION_MESSAGE);
                     
                     Loadings loads = new Loadings();
-                    fr.dispose();
+                    this.dispose();
                     
                 } catch (SQLException ex) {
                     ex.printStackTrace();

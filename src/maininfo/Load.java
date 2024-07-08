@@ -3,7 +3,7 @@ package maininfo;
 import java.awt.*;
 import javax.swing.*;
 
-public class Load extends JFrame {
+public class Load extends JFrame  {
     
     JFrame fr1 = new JFrame();
     JProgressBar jprog;
@@ -41,7 +41,7 @@ public class Load extends JFrame {
         lblq.setForeground(new Color(145, 95, 109));
         add(lblq);
         
-        lblwait = new JLabel("Loading, Please Wait...");
+        lblwait = new JLabel("Loading data, Please Wait...");
         lblwait.setBounds(100, 280, 200, 200);
         lblwait.setFont(new Font("Impact", Font.PLAIN, 15));
         lblwait.setForeground(new Color(145, 95, 109));
