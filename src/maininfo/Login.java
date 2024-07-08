@@ -1,7 +1,12 @@
 package maininfo;
 
+import java.sql.SQLException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.awt.*;
 import java.awt.event.*;
+import java.sql.ResultSet;
 import java.util.concurrent.TimeUnit;
 import javax.swing.*;
 
@@ -13,12 +18,22 @@ public class Login extends JFrame implements ActionListener {
     JPanel colorpurple, colorviolet;
     JTextField txtadmin;
     JPasswordField txtpass;
+    Connection conn;
     
     int failedAttempts;
     boolean isLocked;
     long lockEndTime;
 
-    public Login() {
+    Login() {
+        
+        try {
+            conn = DriverManager.getConnection("jdbc:mysql://localhost:3307/db_cite", "root", "");         
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Database connection error", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
         setTitle("MYSQL");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -66,6 +81,12 @@ public class Login extends JFrame implements ActionListener {
         lblsql.setFont(new Font("Aptos", Font.BOLD, 50));
         lblsql.setForeground(Color.WHITE);
         colorviolet.add(lblsql);
+        
+        lblaccount = new JLabel("Don't have an account?");
+        lblaccount.setBounds(50,470,200,30);
+        lblaccount.setFont(new Font("Aptos", Font.PLAIN, 14));
+        lblaccount.setForeground(Color.BLACK);
+        colorviolet.add(lblaccount);
 
         txtadmin = new JTextField();
         txtadmin.setBounds(170, 220, 150, 30);
@@ -75,7 +96,7 @@ public class Login extends JFrame implements ActionListener {
         colorpurple.add(txtadmin);
 
         txtpass = new JPasswordField();
-        txtpass.setBounds(170, 270, 150, 3);
+        txtpass.setBounds(170, 270, 150, 30);
         txtpass.setBackground(Color.WHITE);
         txtpass.setBorder(null);
         txtpass.setForeground(Color.BLACK);
@@ -88,6 +109,14 @@ public class Login extends JFrame implements ActionListener {
         btnlogin.setFont(new Font("Aptos", Font.PLAIN, 14));
         colorpurple.add(btnlogin);
         btnlogin.addActionListener(this);
+        
+        btnsignup = new JButton("Sign Up");
+        btnsignup.setBounds(210,470,100,30);
+        btnsignup.setBorderPainted(false);
+        btnsignup.setBackground(new Color(255, 255, 255));
+        btnsignup.setFont(new Font("Aptos", Font.PLAIN, 14));
+        colorviolet.add(btnsignup);
+        btnsignup.addActionListener(this);
 
         lblcount = new JLabel();
         lblcount.setBounds(85, 300, 300, 30);
@@ -101,9 +130,15 @@ public class Login extends JFrame implements ActionListener {
         setVisible(true);
     }
 
-    @Override
+   @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == btnlogin) {
+        if (e.getSource() == btnsignup) {
+          
+            Admin ad = new Admin();
+            ad.setVisible(true);
+            this.dispose();
+            
+        } else if (e.getSource() == btnlogin) {
             if (isLocked) {
                 long currentTime = System.currentTimeMillis();
                 if (currentTime >= lockEndTime) {
@@ -114,19 +149,20 @@ public class Login extends JFrame implements ActionListener {
                 }
             }
 
-            String Admin = txtadmin.getText();
-            String Password = new String(txtpass.getPassword());
+            String adminID = txtadmin.getText();
+            String password = new String(txtpass.getPassword());
 
-            if (validateCredentials(Admin, Password)) {
+            if (validateCredentials(adminID, password)) {
                 this.dispose();
-                new Load();
+                Load loads = new Load(); 
+                loads.setVisible(true);
+                
             } else {
                 failedAttempts++;
                 if (failedAttempts >= 4) {
                     isLocked = true;
-                    lockEndTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(10); 
+                    lockEndTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(10);
                     new LockoutCountdown().execute();
-                    
                 } else {
                     JOptionPane.showMessageDialog(this, "Login Failed!", "Failed", JOptionPane.ERROR_MESSAGE);
                 }
@@ -135,15 +171,24 @@ public class Login extends JFrame implements ActionListener {
     }
 
     private boolean validateCredentials(String adminID, String password) {
-        
-        return "kea".equals(adminID) && "arciaga".equals(password);
+        try {
+            String sql = "SELECT * FROM tbl_admin WHERE Admin_ID=? AND Password=?";
+            PreparedStatement statement = conn.prepareStatement(sql);
+            statement.setString(1, adminID);
+            statement.setString(2, password);
+            ResultSet result = statement.executeQuery();
+            
+            return result.next(); 
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
     }
 
     private class LockoutCountdown extends SwingWorker<Void, Integer> {
-        
+
         @Override
         protected Void doInBackground() throws Exception {
-            
             long remainingTime;
             while ((remainingTime = lockEndTime - System.currentTimeMillis()) > 0) {
                 publish((int) TimeUnit.MILLISECONDS.toSeconds(remainingTime));
@@ -155,7 +200,7 @@ public class Login extends JFrame implements ActionListener {
         @Override
         protected void process(java.util.List<Integer> chunks) {
             int secondsLeft = chunks.get(chunks.size() - 1);
-            lblcount.setText("So many attempts, please wait for " + secondsLeft + " seconds.");
+            lblcount.setText("Too many attempts, please wait for " + secondsLeft + " seconds.");
         }
 
         @Override
@@ -163,5 +208,5 @@ public class Login extends JFrame implements ActionListener {
             lblcount.setText("");
         }
     }
-    
+
 }

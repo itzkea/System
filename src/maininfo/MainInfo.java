@@ -4,7 +4,7 @@ public class MainInfo {
 
     public static void main(String[] args) {
         
-        Loading load = new Loading();
+        Login log = new Login();
     }
     
 }
