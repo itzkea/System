@@ -75,7 +75,7 @@ public class Login extends JFrame implements ActionListener {
         colorpurple.add(txtadmin);
 
         txtpass = new JPasswordField();
-        txtpass.setBounds(170, 270, 150, 30);
+        txtpass.setBounds(170, 270, 150, 3);
         txtpass.setBackground(Color.WHITE);
         txtpass.setBorder(null);
         txtpass.setForeground(Color.BLACK);
